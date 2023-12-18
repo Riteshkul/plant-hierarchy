@@ -1,26 +1,28 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
-
-function App() {
+// App.tsx
+import React, { useState } from 'react';
+import { BrowserRouter as Router, Route, Routes as Switch } from 'react-router-dom';
+import Login from './components/Auth/Login';
+import Signup from './components/Auth/Signup';// Import your Signup component
+import Home from './components/Home';
+import './App.css'
+import Root from './components/Root';
+import Plant from './components/Plant';
+import Hierarchy from './components/Hierarchy';
+const App: React.FC = () => {
+  const [username, setUsername] = useState();
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <Switch>
+        <Route path="/signup" element={<Signup setUsername={setUsername} />} />
+        <Route path="/" element={<Login setUsername={setUsername} />} />
+        <Route path='/home' element={<Home username={username} />} />
+        <Route path='/addroot' element={<Root username={username} />} />
+        <Route path='/plant' element={<Plant username={username} />} />
+        <Route path='/hierarchy' element={<Hierarchy username={username} />} />
+
+      </Switch>
+    </Router>
   );
-}
+};
 
 export default App;
