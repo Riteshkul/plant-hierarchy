@@ -1,7 +1,27 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import axios from 'axios';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 
 const Navbar = (props: any) => {
+    const [searchTerm, setSearchTerm] = useState<string>('');
+    const [suggestions, setSuggestions] = useState<string[]>([]);
+    const navigate = useNavigate();
+
+    const fetchSuggestions = async (term: string) => {
+        try {
+            const response = await axios.get<string[]>(`http://localhost:8080/api/nodes/suggestions?term=${term}`);
+            setSuggestions(response.data);
+        } catch (error) {
+            console.error('Error fetching plant suggestions:', error);
+        }
+    };
+
+    const handleSearch = (event: React.FormEvent) => {
+        event.preventDefault();
+        // Redirect to hierarchy page with the selected plant
+        navigate(`/hierarchy/${searchTerm}`)
+        // window.location.href = `/hierarchy/${searchTerm}`;
+    };
     return (
         <nav className="navbar navbar-expand-lg mb-1" style={{ backgroundColor: "#3CB043" }} >
             <div className="container-fluid">
@@ -23,9 +43,39 @@ const Navbar = (props: any) => {
                         <li className="nav-item">
                             <Link className="nav-link" to="/addroot" style={{ color: 'white' }}>Add Kingdom</Link>
                         </li>
-                        <form className="d-flex" role="search">
-                            <input className="form-control me-2" type="search" placeholder="Search" aria-label="Search" />
-                            <button className="btn btn-outline-success" type="submit" style={{ color: 'white' }}>Search</button>
+                        <form className="d-flex" role="search" onSubmit={handleSearch}>
+                            <div className="position-relative">
+                                <input
+                                    className="form-control me-2"
+                                    type="search"
+                                    placeholder="Search"
+                                    aria-label="Search"
+                                    value={searchTerm}
+                                    onChange={(e) => {
+                                        setSearchTerm(e.target.value);
+                                        fetchSuggestions(e.target.value);
+                                    }}
+                                />
+                                {suggestions.length > 0 && (
+                                    <div className="autocomplete-suggestions">
+                                        {suggestions.map((plant) => (
+                                            <div
+                                                key={plant}
+                                                className="suggestion"
+                                                onClick={() => {
+                                                    setSearchTerm(plant);
+                                                    setSuggestions([]);
+                                                }}
+                                            >
+                                                {plant}
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                            <button className="btn btn-outline-primary" type="submit" style={{ color: 'white' }}>
+                                Search
+                            </button>
                         </form>
                     </ul>
                     <ul className="navbar-nav ml-auto">

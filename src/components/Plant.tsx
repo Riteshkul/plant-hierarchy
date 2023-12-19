@@ -107,6 +107,7 @@ const Plant = (props: any) => {
 
     const handleonsubmit = async (e: any) => {
         e.preventDefault();
+        const formData = new FormData();
         const Kingdom = selectedKingdom;
         const Division = selectedDivision;
         const Class = selectedClass;
@@ -121,17 +122,41 @@ const Plant = (props: any) => {
         );
 
         if (selectedRecord) {
-            const data = {
-                parentNodeId: selectedRecord.id,
-                childNode: {
-                    plantname: e.target.elements.name.value,
-                    plantdescription: e.target.elements.description.value,
-                    genus: e.target.elements.genus.value,
-                    species: e.target.elements.species.value,
-                },
+            formData.append('parentNodeId', selectedRecord.id.toString());
+            // formData.append('childNode', JSON.stringify({
+            //     plantname: e.target.elements.name.value,
+            //     plantdescription: e.target.elements.description.value,
+            //     genus: e.target.elements.genus.value,
+            //     species: e.target.elements.species.value,
+            // }));
+            formData.append('plantname', e.target.elements.name.value);
+            formData.append('plantdescription', e.target.elements.description.value);
+            formData.append('genus', e.target.elements.genus.value);
+            formData.append('species', e.target.elements.species.value);
+            const imageInput = e.target.elements.image;
+            if (imageInput.files.length > 0) {
+                formData.append('imageFile', imageInput.files[0]);
             }
+            // const data = {
+            //     parentNodeId: selectedRecord.id,
+            //     childNode: {
+            //         plantname: e.target.elements.name.value,
+            //         plantdescription: e.target.elements.description.value,
+            //         genus: e.target.elements.genus.value,
+            //         species: e.target.elements.species.value,
+            //     },
+            // }
             try {
-                const response = await axios.post('http://localhost:8080/api/nodes/addChild', data);
+                const response = await axios.post(
+                    'http://localhost:8080/api/nodes/addChild',
+                    formData,
+                    {
+                        headers: {
+                            'Content-Type': `multipart/form-data;`,
+                        },
+                    }
+                );
+
                 window.alert('Plant added successfully!');
                 if (response.status === 200) {
                     window.alert('Plant added successfully!');
@@ -278,6 +303,11 @@ const Plant = (props: any) => {
                             <label htmlFor="species">Species</label>
                             <input type="text" name="species" className="form-control" id="species" placeholder="Enter Species" required />
                         </div>
+                        <div className="form-group mb-3">
+                            {/* <label htmlFor="image">Image</label> */}
+                            <input type="file" name="image" className="form-control" id="image" required />
+                        </div>
+
                         <button type="submit" className="btn btn-primary">ADD</button>
                     </form>
                     {error && (

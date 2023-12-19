@@ -18,7 +18,7 @@ const App: React.FC = () => {
         <Route path='/home' element={<Home username={username} />} />
         <Route path='/addroot' element={<Root username={username} />} />
         <Route path='/plant' element={<Plant username={username} />} />
-        <Route path='/hierarchy' element={<Hierarchy username={username} />} />
+        <Route path='/hierarchy/:plantName?' element={<Hierarchy username={username} />} />
 
       </Switch>
     </Router>
