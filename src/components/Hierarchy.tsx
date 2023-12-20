@@ -27,67 +27,47 @@ interface PlantInfo {
         family: string;
     };
 }
+interface OpenParents {
+    [key: number]: boolean;
+}
 
 const Hierarchy = (props: any) => {
     const [showModal, setShowModal] = useState<boolean>(false);
     const [isDropdownOpen, setDropdownOpen] = useState<boolean>(false);
     const [newDescription, setNewDescription] = useState<string>('');
     const [error, setError] = useState<string | null>(null);
+    const [openParents, setOpenParents] = useState<{ [key: number]: boolean }>({});
     const [hierarchy, setHierarchy] = useState<HierarchyNode[]>([]);
     const [selectedPlant, setSelectedPlant] = useState<PlantInfo | null>(null);
     const { plantName } = useParams<{ plantName: string }>();
-    // const renderHierarchy = (node: HierarchyNode) => (
-    //     <ul key={node.id}>
-    //         <li >
-    //             <strong>
-    //                 <i className="bi bi-play-fill"></i>
-    //                 {`${node.name}`}
-    //             </strong>
-    //             {node.children && (
-    //                 <ul>
-    //                     {node.children.map((child) => (
-    //                         <li key={child.id} onClick={() => handleNodeClick(child.name)} style={{ cursor: 'pointer' }}>
-    //                             <i className="bi bi-record-circle"></i>
-    //                             {`${child.name}`}
-    //                             {child.children && renderHierarchy(child)}
-    //                         </li>
-    //                     ))}
-    //                 </ul>
-    //             )}
-    //         </li>
-    //     </ul>
-    // );
-    const renderHierarchy = (node: HierarchyNode) => {
 
-
-        const handleParentClick = () => {
-            setDropdownOpen(!isDropdownOpen);
-        };
-
-        return (
-            <ul key={node.id}>
-                <li>
-                    <div onClick={handleParentClick} style={{ cursor: 'pointer' }}>
-                        <strong>
-                            <i className={`bi ${isDropdownOpen ? 'bi-caret-down' : 'bi-caret-right'}`}></i>
-                            {`${node.name}`}
-                        </strong>
-                    </div>
-                    {isDropdownOpen && node.children && (
-                        <ul>
-                            {node.children.map((child) => (
-                                <li key={child.id} onClick={() => handleNodeClick(child.name)} style={{ cursor: 'pointer' }}>
-                                    <i className="bi bi-record-circle"></i>
-                                    {`${child.name}`}
-                                    {child.children && renderHierarchy(child)}
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                </li>
-            </ul>
-        );
+    const handleParentClick = (parentId: number) => {
+        setOpenParents((prev) => ({ ...prev, [parentId]: !prev[parentId] }));
     };
+    const renderHierarchy = (node: HierarchyNode) => (
+        <ul key={node.id}>
+            <li>
+                <div onClick={() => handleParentClick(node.id)} style={{ cursor: 'pointer' }}>
+                    <strong>
+                        <i className={`bi ${openParents[node.id] ? 'bi-caret-down' : 'bi-caret-right'}`}></i>
+                        {`${node.name}`}
+                    </strong>
+                </div>
+                {openParents[node.id] && node.children && (
+                    <ul>
+                        {node.children.map((child: HierarchyNode) => (
+                            <li key={child.id} onClick={() => handleNodeClick(child.name)} style={{ cursor: 'pointer' }}>
+                                <i className="bi bi-record-circle"></i>
+                                {`${child.name}`}
+                                {child.children && renderHierarchy(child)}
+                            </li>
+                        ))}
+                    </ul>
+                )}
+            </li>
+        </ul>
+    );
+
 
 
     useEffect(() => {
@@ -128,25 +108,6 @@ const Hierarchy = (props: any) => {
                 console.error('Error fetching plant info:', error);
             });
     };
-    // const handleEditDescription = (id: number) => {
-    //     const newDescription = prompt('Enter the updated description:');
-    //     console.log('updated plant id', id);
-    //     console.log('updated description', newDescription);
-
-    //     if (newDescription !== null) {
-    //         axios
-    //             .put('http://localhost:8080/api/nodes/editDescription', {
-    //                 id: id,
-    //                 plantdescription: newDescription,
-    //             })
-    //             .then((response) => {
-    //                 // Handle success
-    //                 alert('Description updated successfully');
-    //                 setSelectedPlant(null);
-    //                 // Refresh the table by fetching the updated data
-    //             })
-    //     }
-    // };
 
 
     const handleEditDescription = (id: number) => {
@@ -184,11 +145,11 @@ const Hierarchy = (props: any) => {
             });
     };
 
-    const handleDeleteNode = (id: number) => {
+    const handleDeleteNode = (id: number, name: String) => {
         const confirmDelete = window.confirm('Are you sure you want to delete this node?');
         if (confirmDelete) {
             axios
-                .delete(`http://localhost:8080/api/nodes/deleteNode/${id}`)
+                .delete(`http://localhost:8080/api/nodes/deleteNode/${id}/${name}`)
                 .then((response) => {
                     // Handle success, update the UI or show a notification
                 })
@@ -251,7 +212,7 @@ const Hierarchy = (props: any) => {
                                                     </button>
                                                     <button
                                                         className="btn btn-danger btn-sm "
-                                                        onClick={() => handleDeleteNode(selectedPlant.id)}
+                                                        onClick={() => handleDeleteNode(selectedPlant.id, selectedPlant.image_name)}
                                                     >
                                                         Delete
                                                     </button>

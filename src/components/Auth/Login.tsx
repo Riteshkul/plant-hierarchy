@@ -22,6 +22,7 @@ const Login = (props: any) => {
             const response = await axios.post('http://localhost:8080/api/auth/login', userData);
             props.setUsername(response.data.username);
             dispatch(loginSuccess(response.data));
+            alert('logged in successfully')
             navigate('/home');
         } catch (error: any) {
             dispatch(loginFailure(error.response));

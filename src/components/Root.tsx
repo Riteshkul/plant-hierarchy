@@ -18,10 +18,8 @@ const Root = (props: any) => {
         try {
             const response = await axios.post('http://localhost:8080/api/parent/add', data);
             if (response.status === 200) {
-                window.alert('Kingdom added successfully!');
-                setTimeout(() => {
-                    setError(null);
-                }, 3000);
+                alert('Kingdom added successfully!');
+
             }
         } catch (error: any) {
             if (error.response.status === 401) {

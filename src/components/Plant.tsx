@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const Plant = (props: any) => {
     interface PlantData {
@@ -30,9 +31,12 @@ const Plant = (props: any) => {
 
 
     const [description, setDescription] = useState<string>('');
-    const [wordCount, setWordCount] = useState<number>(0);
+    const [plantname, setPlantName] = useState<string>('');
+    const [descwordCount, setDescWordCount] = useState<number>(0);
+    const [namewordCount, setNameWordCount] = useState<number>(0);
     const maxWordLimit = 200;
-
+    const maxNameCharacterLimit = 50;
+    const navigate = useNavigate();
     const fetchData = async () => {
         try {
             const response = await axios.get<PlantData[]>('http://localhost:8080/api/parent');
@@ -96,12 +100,27 @@ const Plant = (props: any) => {
     };
     const handleDescriptionChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
         const inputText = event.target.value;
-        const words = inputText.split(/\s+/);
-        const currentWordCount = words.length - 1; // Subtracting 1 to exclude empty string after last space
+        const words = inputText.split(/\s+/);  // Split text into words
+        const currentWordCount = words.length - 1; // Subtracting 1 to exclude empty string after the last space
 
         if (currentWordCount <= maxWordLimit) {
             setDescription(inputText);
-            setWordCount(currentWordCount);
+            setDescWordCount(maxWordLimit - currentWordCount);
+        } else {
+            // If the limit is exceeded, truncate the text to the allowed word count
+            setDescription(words.slice(0, maxWordLimit).join(' '));
+            setDescWordCount(0);
+        }
+    };
+    const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const inputText = event.target.value;
+
+        if (inputText.length <= maxNameCharacterLimit) {
+            setPlantName(inputText);
+            setNameWordCount(maxNameCharacterLimit - inputText.length);
+        } else {
+            setPlantName(inputText.slice(0, maxNameCharacterLimit));
+            setNameWordCount(0);
         }
     };
 
@@ -123,12 +142,6 @@ const Plant = (props: any) => {
 
         if (selectedRecord) {
             formData.append('parentNodeId', selectedRecord.id.toString());
-            // formData.append('childNode', JSON.stringify({
-            //     plantname: e.target.elements.name.value,
-            //     plantdescription: e.target.elements.description.value,
-            //     genus: e.target.elements.genus.value,
-            //     species: e.target.elements.species.value,
-            // }));
             formData.append('plantname', e.target.elements.name.value);
             formData.append('plantdescription', e.target.elements.description.value);
             formData.append('genus', e.target.elements.genus.value);
@@ -137,15 +150,6 @@ const Plant = (props: any) => {
             if (imageInput.files.length > 0) {
                 formData.append('imageFile', imageInput.files[0]);
             }
-            // const data = {
-            //     parentNodeId: selectedRecord.id,
-            //     childNode: {
-            //         plantname: e.target.elements.name.value,
-            //         plantdescription: e.target.elements.description.value,
-            //         genus: e.target.elements.genus.value,
-            //         species: e.target.elements.species.value,
-            //     },
-            // }
             try {
                 const response = await axios.post(
                     'http://localhost:8080/api/nodes/addChild',
@@ -156,13 +160,11 @@ const Plant = (props: any) => {
                         },
                     }
                 );
-
-                window.alert('Plant added successfully!');
                 if (response.status === 200) {
-                    window.alert('Plant added successfully!');
-                    setTimeout(() => {
-                        setError(null);
-                    }, 3000);
+                    alert('Plant added successfully!');
+
+                    // navigate('/hierarchy');
+
                 }
             } catch (error: any) {
                 if (error.response.status === 403) {
@@ -199,8 +201,11 @@ const Plant = (props: any) => {
                     <h2 className='mb-3 mt-5' style={{ textAlign: 'center' }}>Add Plant </h2>
                     <form onSubmit={handleonsubmit}>
                         <div className="form-group mb-3">
-                            <label htmlFor="name">Name</label>
-                            <input type="text" name="name" className="form-control" id="name" placeholder="Enter name" required />
+                            <label htmlFor="name">Name (Max 50 Characters)</label>
+                            <input type="text" name="name" className="form-control" id="name" value={plantname} onChange={handleNameChange} placeholder="Enter name" required />
+                        </div>
+                        <div className="mt-2 mb-3">
+                            {namewordCount}/{maxNameCharacterLimit} Characters remaining
                         </div>
                         <div className="form-group mb-3">
                             <label htmlFor="description">Description (Max 200 words)</label>
@@ -215,7 +220,7 @@ const Plant = (props: any) => {
                                 required
                             ></textarea>
                             <div className="mt-2">
-                                {wordCount}/{maxWordLimit} words remaining
+                                {descwordCount}/{maxWordLimit} words remaining
                             </div>
                         </div>
                         <div className="form-group mb-3">

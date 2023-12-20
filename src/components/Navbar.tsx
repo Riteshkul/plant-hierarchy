@@ -5,17 +5,25 @@ import { Link, useNavigate } from 'react-router-dom';
 const Navbar = (props: any) => {
     const [searchTerm, setSearchTerm] = useState<string>('');
     const [suggestions, setSuggestions] = useState<string[]>([]);
+    const [showPopover, setShowPopover] = useState(false);
     const navigate = useNavigate();
 
     const fetchSuggestions = async (term: string) => {
         try {
             const response = await axios.get<string[]>(`http://localhost:8080/api/nodes/suggestions?term=${term}`);
             setSuggestions(response.data);
+            setShowPopover(true);
         } catch (error) {
             console.error('Error fetching plant suggestions:', error);
         }
     };
-
+    const handleChange = (event: any) => {
+        if (event.length === 0) {
+            setSuggestions([]);
+            setShowPopover(false);
+            return;
+        }
+    }
     const handleSearch = (event: React.FormEvent) => {
         event.preventDefault();
         // Redirect to hierarchy page with the selected plant
@@ -54,22 +62,28 @@ const Navbar = (props: any) => {
                                     onChange={(e) => {
                                         setSearchTerm(e.target.value);
                                         fetchSuggestions(e.target.value);
+                                        handleChange(e.target.value);
                                     }}
                                 />
-                                {suggestions.length > 0 && (
-                                    <div className="autocomplete-suggestions">
-                                        {suggestions.map((plant) => (
-                                            <div
-                                                key={plant}
-                                                className="suggestion"
-                                                onClick={() => {
-                                                    setSearchTerm(plant);
-                                                    setSuggestions([]);
-                                                }}
-                                            >
-                                                {plant}
+                                {showPopover && (
+                                    <div className="position-absolute" style={{ top: '100%', left: 0, zIndex: 1000 }}>
+                                        <div className="popover">
+                                            <div className="popover-body">
+                                                {suggestions.map((plant) => (
+                                                    <div
+                                                        key={plant}
+                                                        className="suggestion"
+                                                        onClick={() => {
+                                                            setSearchTerm(plant);
+                                                            setSuggestions([]);
+                                                            setShowPopover(false);
+                                                        }}
+                                                    >
+                                                        {plant}
+                                                    </div>
+                                                ))}
                                             </div>
-                                        ))}
+                                        </div>
                                     </div>
                                 )}
                             </div>

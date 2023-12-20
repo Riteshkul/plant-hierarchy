@@ -33,6 +33,7 @@ const Signup = (props: any) => {
             const response = await axios.post('http://localhost:8080/api/auth/register', userData);
             props.setUsername(response.data.username);
             dispatch(registerSuccess(response.data));
+            alert('logged in successfully')
             navigate('/home')
         } catch (error: any) {
             dispatch(registerFailure(error.response));
