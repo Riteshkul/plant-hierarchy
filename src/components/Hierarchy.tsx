@@ -3,10 +3,12 @@ import Navbar from './Navbar';
 import Footer from './Footer';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
+import TreeView from './TreeNode';
 
 interface HierarchyNode {
     id: number;
     name: string;
+    level: string;
     children?: HierarchyNode[];
 }
 
@@ -16,6 +18,7 @@ interface PlantInfo {
     plantdescription: string;
     genus: string;
     species: string;
+    level: string;
     image_name: string;
     parent: {
         id: number;
@@ -43,34 +46,34 @@ const Hierarchy = (props: any) => {
     const [selectedPlant, setSelectedPlant] = useState<PlantInfo | null>(null);
     const { plantName } = useParams<{ plantName: string }>();
 
-    const handleParentClick = (parentId: number) => {
-        setOpenParents((prev) => ({ ...prev, [parentId]: !prev[parentId] }));
-    };
-    const renderHierarchy = (node: HierarchyNode) => (
-        <ul key={node.id}>
-            <li>
-                <div onClick={() => handleParentClick(node.id)} style={{ cursor: 'pointer' }}>
-                    <strong>
-                        <i className={`bi ${openParents[node.id] ? 'bi-caret-down' : 'bi-caret-right'}`}></i>
-                        {`${node.name}`}
-                    </strong>
-                </div>
-                {openParents[node.id] && node.children && (
-                    <ul>
-                        {node.children.map((child: HierarchyNode) => (
-                            <li key={child.id} onClick={() => handleNodeClick(child.name)} style={{ cursor: 'pointer' }}>
-                                <i className="bi bi-record-circle"></i>
-                                {`${child.name}`}
-                                {child.children && renderHierarchy(child)}
-                            </li>
-                        ))}
-                    </ul>
-                )}
+    // const handleParentClick = (parentId: number) => {
+    //     setOpenParents((prev) => ({ ...prev, [parentId]: !prev[parentId] }));
+    // };
+    // const renderHierarchy = (node: HierarchyNode) => (
+    //     <ul key={node.id}>
+    //         <li>
+    //             <div onClick={() => handleParentClick(node.id)} style={{ cursor: 'pointer' }}>
+    //                 <strong>
+    //                     <i className={`bi ${openParents[node.id] ? 'bi-caret-down' : 'bi-caret-right'}`}></i>
+    //                     {`${node.name}`}
+    //                 </strong>
+    //             </div>
+    //             {openParents[node.id] && node.children && (
+    //                 <ul>
+    //                     {node.children.map((child: HierarchyNode) => (
+    //                         <li key={child.id} onClick={() => handleNodeClick(child.name)} style={{ cursor: 'pointer' }}>
+    //                             <i className="bi bi-record-circle"></i>
+    //                             {`${child.name}`}
+    //                             {child.children && renderHierarchy(child)}
+    //                         </li>
+    //                     ))}
+    //                 </ul>
+    //             )}
 
-            </li>
-        </ul>
+    //         </li>
+    //     </ul>
 
-    );
+    // );
 
 
 
@@ -101,17 +104,32 @@ const Hierarchy = (props: any) => {
         }
     }, [plantName]);
 
-    const handleNodeClick = (plantName: string) => {
-        axios
-            .get<PlantInfo[]>(`http://localhost:8080/api/nodes/getHierarchy/${plantName}`)
-            .then((response) => {
-                const plantInfo = response.data[0];
-                console.log('image name', plantInfo)
-                setSelectedPlant(plantInfo);
-            })
-            .catch((error) => {
-                console.error('Error fetching plant info:', error);
-            });
+    // const handleNodeClick = (plantName: string) => {
+    //     axios
+    //         .get<PlantInfo[]>(`http://localhost:8080/api/nodes/getHierarchy/${plantName}`)
+    //         .then((response) => {
+    //             const plantInfo = response.data[0];
+    //             console.log('image name', plantInfo)
+    //             setSelectedPlant(plantInfo);
+    //         })
+    //         .catch((error) => {
+    //             console.error('Error fetching plant info:', error);
+    //         });
+    // };
+    const handleNodeClick = (node: HierarchyNode) => {
+        console.log('inside function')
+        if (node.level === 'plant') {
+            axios
+                .get<PlantInfo[]>(`http://localhost:8080/api/nodes/getHierarchy/${node.name}`)
+                .then((response) => {
+                    const plantInfo = response.data[0];
+                    console.log('image name', plantInfo);
+                    setSelectedPlant(plantInfo);
+                })
+                .catch((error) => {
+                    console.error('Error fetching plant info:', error);
+                });
+        }
     };
 
 
@@ -171,9 +189,13 @@ const Hierarchy = (props: any) => {
             <Navbar username={props.username} />
             <div className="container-fluid vh-100 d-flex mt-3 mb-3">
                 <div className="row w-100 p-4 shadow rounded bg-white">
-                    <div className="col-md-4">
+                    {/* <div className="col-md-4">
                         <h2>Hierarchy</h2>
                         {hierarchy.map((node) => renderHierarchy(node))}
+                    </div> */}
+                    <div className="col-md-4">
+                        <h2>Hierarchy</h2>
+                        <TreeView data={hierarchy} onNodeClick={handleNodeClick} />
                     </div>
                     <div className="col-md-8">
                         <h2>Plant Information</h2>
