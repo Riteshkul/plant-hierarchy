@@ -27,8 +27,9 @@ interface PlantInfo {
         family: string;
     };
 }
+
 interface OpenParents {
-    [key: number]: boolean;
+    [key: string]: boolean;
 }
 
 const Hierarchy = (props: any) => {
@@ -36,8 +37,9 @@ const Hierarchy = (props: any) => {
     const [isDropdownOpen, setDropdownOpen] = useState<boolean>(false);
     const [newDescription, setNewDescription] = useState<string>('');
     const [error, setError] = useState<string | null>(null);
-    const [openParents, setOpenParents] = useState<{ [key: number]: boolean }>({});
     const [hierarchy, setHierarchy] = useState<HierarchyNode[]>([]);
+    const [openParents, setOpenParents] = useState<OpenParents>({});
+
     const [selectedPlant, setSelectedPlant] = useState<PlantInfo | null>(null);
     const { plantName } = useParams<{ plantName: string }>();
 
@@ -64,8 +66,10 @@ const Hierarchy = (props: any) => {
                         ))}
                     </ul>
                 )}
+
             </li>
         </ul>
+
     );
 
 
@@ -75,6 +79,7 @@ const Hierarchy = (props: any) => {
             .get<HierarchyNode[]>('http://localhost:8080/api/nodes/getAllHierarchy')
             .then((response) => {
                 setHierarchy(response.data);
+                console.log("api data", response.data);
             })
             .catch((error) => {
                 console.error('Error fetching hierarchy:', error);
@@ -108,6 +113,9 @@ const Hierarchy = (props: any) => {
                 console.error('Error fetching plant info:', error);
             });
     };
+
+
+
 
 
     const handleEditDescription = (id: number) => {
@@ -163,11 +171,11 @@ const Hierarchy = (props: any) => {
             <Navbar username={props.username} />
             <div className="container-fluid vh-100 d-flex mt-3 mb-3">
                 <div className="row w-100 p-4 shadow rounded bg-white">
-                    <div className="col-md-3">
+                    <div className="col-md-4">
                         <h2>Hierarchy</h2>
                         {hierarchy.map((node) => renderHierarchy(node))}
                     </div>
-                    <div className="col-md-9">
+                    <div className="col-md-8">
                         <h2>Plant Information</h2>
 
                         {selectedPlant && (
@@ -264,3 +272,4 @@ const Hierarchy = (props: any) => {
 };
 
 export default Hierarchy;
+

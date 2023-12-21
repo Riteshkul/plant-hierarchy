@@ -309,7 +309,7 @@ const Plant = (props: any) => {
                             <input type="text" name="species" className="form-control" id="species" placeholder="Enter Species" required />
                         </div>
                         <div className="form-group mb-3">
-                            {/* <label htmlFor="image">Image</label> */}
+                            <label htmlFor="image">Image</label>
                             <input type="file" name="image" className="form-control" id="image" required />
                         </div>
 
