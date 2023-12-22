@@ -48,7 +48,7 @@ const TreeNode: React.FC<{ node: HierarchyNode; onNodeClick: (node: HierarchyNod
     );
 };
 
-
+//The TreeView component renders the entire tree by mapping over the root nodes and rendering each TreeNode.
 const TreeView: React.FC<TreeViewProps> = ({ data, onNodeClick }) => {
     return (
         <div>
